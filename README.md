@@ -22,6 +22,11 @@ A collection of browser tools and games — no dependencies, no build step, each
 - Session tracking with tomato icons; Web Audio ding on completion
 - Live tab title countdown
 
+### To-do List (`todo.html`)
+- Add, complete, and delete tasks
+- Persisted to `localStorage` across page reloads
+- Clear completed tasks in one click
+
 ## Hosting
 
 Deployed via [GitHub Pages](https://pages.github.com/) — the `main` branch root serves `index.html` as the hub.
