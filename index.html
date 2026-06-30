@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Games</title>
+<script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+<title>Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet" />
@@ -127,13 +128,44 @@
   .card:hover .card-arrow {
     transform: translateY(-50%) translateX(3px);
   }
+
+  [data-theme="dark"] {
+    --paper:  #1c1a17;
+    --rule:   #232d3a;
+    --ink:    #e8e4db;
+    --pencil: #9a9087;
+    --margin: #4a2222;
+    --red:    #e06868;
+    --blue:   #5a9fd4;
+  }
+
+  .theme-btn {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    font-size: 1.1rem;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    z-index: 100;
+    transition: transform 0.15s ease;
+    padding: 0;
+  }
+  .theme-btn::before { content: '🌙'; }
+  [data-theme="dark"] .theme-btn::before { content: '☀'; }
+  .theme-btn:hover { transform: rotate(20deg) scale(1.08); }
+  .theme-btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 </style>
 </head>
 <body>
+<button class="theme-btn" id="themeBtn" aria-label="Toggle theme"></button>
 <div class="sheet">
   <header>
-    <h1>games</h1>
-    <span class="subtitle">pick something to play</span>
+    <h1>hub</h1>
+    <span class="subtitle">pick something to do</span>
   </header>
 
   <div class="games">
@@ -150,7 +182,23 @@
       <p class="card-desc">turn text or images into characters</p>
       <span class="card-arrow">→</span>
     </a>
+
+    <a class="card" href="pomodoro.html">
+      <span class="card-icon">🍅</span>
+      <h2 class="card-title">pomodoro</h2>
+      <p class="card-desc">focus timer with short and long breaks</p>
+      <span class="card-arrow">→</span>
+    </a>
   </div>
 </div>
+<script>
+(function () {
+  document.getElementById('themeBtn').addEventListener('click', function () {
+    var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
+})();
+</script>
 </body>
 </html>

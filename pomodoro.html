@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+<title>Pomodoro Timer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper:  #fbf7ef;
+    --rule:   #c9d8e8;
+    --ink:    #34322e;
+    --pencil: #5b5750;
+    --margin: #e7a9a3;
+    --red:    #d9544d;
+    --blue:   #2e6fb7;
+    --green:  #3a9e6e;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+
+  body {
+    font-family: "Kalam", "Comic Sans MS", cursive;
+    color: var(--ink);
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(90deg, transparent 38px, var(--margin) 38px, var(--margin) 39px, transparent 39px),
+      repeating-linear-gradient(180deg, transparent 0 31px, var(--rule) 31px 32px);
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 16px 80px;
+    min-height: 100vh;
+  }
+
+  .sheet {
+    width: 100%;
+    max-width: 440px;
+    padding-left: 12px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  h1 {
+    font-family: "Caveat", cursive;
+    font-weight: 700;
+    font-size: clamp(2.8rem, 12vw, 4rem);
+    line-height: 0.9;
+    margin: 0;
+    display: inline-block;
+    transform: rotate(-1.5deg);
+  }
+
+  .subtitle {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--pencil);
+    margin-top: 6px;
+    transform: rotate(0.5deg);
+  }
+
+  /* mode tabs */
+  .modes {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .mode-btn {
+    font-family: "Kalam", cursive;
+    font-size: 0.95rem;
+    background: transparent;
+    border: 2px solid var(--ink);
+    border-radius: 14px 10px 13px 9px / 9px 13px 10px 14px;
+    padding: 5px 14px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.12s ease;
+  }
+  .mode-btn:hover { transform: translateY(-1px) rotate(-0.4deg); }
+  .mode-btn.active { background: var(--ink); color: var(--paper); }
+  .mode-btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+  /* clock */
+  .clock-wrap {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    margin: 0 auto 28px;
+  }
+
+  .clock-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .ring-bg {
+    fill: none;
+    stroke: var(--rule);
+    stroke-width: 12;
+  }
+
+  .ring-fg {
+    fill: none;
+    stroke-width: 12;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.4s ease;
+  }
+
+  .clock-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .time-display {
+    font-family: "Caveat", cursive;
+    font-weight: 700;
+    font-size: 3.8rem;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .mode-label {
+    font-size: 0.85rem;
+    color: var(--pencil);
+    margin-top: 4px;
+  }
+
+  /* buttons */
+  .actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .btn {
+    font-family: "Caveat", cursive;
+    font-size: 1.7rem;
+    border-radius: 16px 12px 15px 11px / 11px 15px 12px 16px;
+    padding: 5px 30px;
+    cursor: pointer;
+    transition: transform 0.12s ease;
+  }
+  .btn:hover { transform: translateY(-2px) rotate(-0.5deg); }
+  .btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+  .btn-primary { background: var(--ink); color: var(--paper); border: 2px solid var(--ink); }
+  .btn-outline  { background: transparent; color: var(--ink); border: 2px solid var(--ink); }
+
+  /* sessions */
+  .sessions {
+    text-align: center;
+  }
+
+  .session-label {
+    font-family: "Caveat", cursive;
+    font-size: 1.25rem;
+    color: var(--pencil);
+    margin-bottom: 10px;
+  }
+
+  .tomatoes {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .tomato {
+    font-size: 1.8rem;
+    opacity: 0.18;
+    filter: grayscale(1);
+    transition: opacity 0.35s ease, filter 0.35s ease, transform 0.35s ease;
+  }
+  .tomato.done {
+    opacity: 1;
+    filter: none;
+    animation: pop 0.35s ease;
+  }
+
+  @keyframes pop {
+    0%   { transform: scale(1) rotate(0deg); }
+    50%  { transform: scale(1.5) rotate(10deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+
+  .back {
+    display: block;
+    text-align: center;
+    margin-top: 40px;
+    font-family: "Caveat", cursive;
+    font-size: 1.3rem;
+    color: var(--pencil);
+    text-decoration: none;
+    transition: transform 0.12s ease;
+  }
+  .back:hover { transform: translateX(-3px); }
+
+  .clock-wrap[data-mode="focus"] .ring-fg { stroke: var(--red); }
+  .clock-wrap[data-mode="short"] .ring-fg { stroke: var(--blue); }
+  .clock-wrap[data-mode="long"]  .ring-fg { stroke: var(--green); }
+
+  [data-theme="dark"] {
+    --paper:  #1c1a17;
+    --rule:   #232d3a;
+    --ink:    #e8e4db;
+    --pencil: #9a9087;
+    --margin: #4a2222;
+    --red:    #e06868;
+    --blue:   #5a9fd4;
+    --green:  #5ab88a;
+  }
+
+  .theme-btn {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    font-size: 1.1rem;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    z-index: 100;
+    transition: transform 0.15s ease;
+    padding: 0;
+  }
+  .theme-btn::before { content: '🌙'; }
+  [data-theme="dark"] .theme-btn::before { content: '☀'; }
+  .theme-btn:hover { transform: rotate(20deg) scale(1.08); }
+  .theme-btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<button class="theme-btn" id="themeBtn" aria-label="Toggle theme"></button>
+<div class="sheet">
+  <header>
+    <h1>pomodoro</h1>
+    <span class="subtitle">focus, then rest</span>
+  </header>
+
+  <div class="modes" role="group" aria-label="Timer mode">
+    <button class="mode-btn active" data-mode="focus">focus</button>
+    <button class="mode-btn" data-mode="short">short break</button>
+    <button class="mode-btn" data-mode="long">long break</button>
+  </div>
+
+  <div class="clock-wrap" data-mode="focus">
+    <svg class="clock-svg" viewBox="0 0 240 240" aria-hidden="true">
+      <circle class="ring-bg" cx="120" cy="120" r="100" />
+      <circle class="ring-fg" id="ringFg" cx="120" cy="120" r="100" />
+    </svg>
+    <div class="clock-face">
+      <div class="time-display" id="timeDisplay" aria-live="polite">25:00</div>
+      <div class="mode-label" id="modeLabel">time to focus</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="startBtn">start</button>
+    <button class="btn btn-outline"  id="resetBtn">reset</button>
+  </div>
+
+  <div class="sessions">
+    <div class="session-label" id="sessionLabel">session 1 of 4</div>
+    <div class="tomatoes" id="tomatoes" aria-label="Completed sessions"></div>
+  </div>
+
+  <a class="back" href="index.html">← back</a>
+</div>
+
+<script>
+(function () {
+  const CIRC = 2 * Math.PI * 100;
+
+  const MODES = {
+    focus: { label: 'time to focus',      secs: 25 * 60, color: '#d9544d' },
+    short: { label: 'short break',        secs:  5 * 60, color: '#2e6fb7' },
+    long:  { label: 'long break — enjoy', secs: 15 * 60, color: '#3a9e6e' },
+  };
+
+  let mode     = 'focus';
+  let timeLeft = MODES.focus.secs;
+  let running  = false;
+  let ticker   = null;
+  let done     = 0; // focus sessions completed in current cycle (0–4)
+
+  const ringFg       = document.getElementById('ringFg');
+  const timeDisplay  = document.getElementById('timeDisplay');
+  const modeLabel    = document.getElementById('modeLabel');
+  const startBtn     = document.getElementById('startBtn');
+  const resetBtn     = document.getElementById('resetBtn');
+  const tomatoWrap   = document.getElementById('tomatoes');
+  const sessionLabel = document.getElementById('sessionLabel');
+
+  ringFg.style.strokeDasharray  = CIRC;
+  ringFg.style.strokeDashoffset = 0;
+
+  // build 4 tomato icons once
+  for (let i = 0; i < 4; i++) {
+    const s = document.createElement('span');
+    s.className = 'tomato';
+    s.textContent = '🍅';
+    tomatoWrap.appendChild(s);
+  }
+  const tomatoes = tomatoWrap.querySelectorAll('.tomato');
+
+  function fmt(secs) {
+    return String(Math.floor(secs / 60)).padStart(2, '0') + ':' +
+           String(secs % 60).padStart(2, '0');
+  }
+
+  function render() {
+    const frac = timeLeft / MODES[mode].secs;
+    ringFg.style.strokeDashoffset = CIRC * (1 - frac);
+    document.querySelector('.clock-wrap').dataset.mode = mode;
+
+    const t = fmt(timeLeft);
+    timeDisplay.textContent = t;
+    document.title = t + ' — pomodoro';
+
+    tomatoes.forEach((el, i) => el.classList.toggle('done', i < done));
+    sessionLabel.textContent = done >= 4
+      ? 'cycle complete — take a long break!'
+      : 'session ' + (done + 1) + ' of 4';
+  }
+
+  function ding() {
+    try {
+      const ac = new (window.AudioContext || window.webkitAudioContext)();
+      [660, 880, 1100].forEach(function (freq, i) {
+        const osc = ac.createOscillator();
+        const env = ac.createGain();
+        osc.connect(env);
+        env.connect(ac.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const t = ac.currentTime + i * 0.2;
+        env.gain.setValueAtTime(0.3, t);
+        env.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+        osc.start(t);
+        osc.stop(t + 0.7);
+      });
+    } catch (_) {}
+  }
+
+  function tick() {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      timeLeft = 0;
+      running = false;
+      clearInterval(ticker);
+      startBtn.textContent = 'start';
+      ding();
+      if (mode === 'focus') {
+        done = Math.min(done + 1, 4);
+      }
+      render();
+      return;
+    }
+    render();
+  }
+
+  function switchMode(m) {
+    clearInterval(ticker);
+    running = false;
+    mode = m;
+    timeLeft = MODES[m].secs;
+    startBtn.textContent = 'start';
+    modeLabel.textContent = MODES[m].label;
+    document.querySelectorAll('.mode-btn').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.mode === m);
+    });
+    render();
+  }
+
+  startBtn.addEventListener('click', function () {
+    if (running) {
+      clearInterval(ticker);
+      running = false;
+      startBtn.textContent = 'start';
+    } else {
+      if (timeLeft <= 0) {
+        timeLeft = MODES[mode].secs;
+        if (mode === 'focus' && done >= 4) done = 0;
+      }
+      running = true;
+      startBtn.textContent = 'pause';
+      ticker = setInterval(tick, 1000);
+    }
+  });
+
+  resetBtn.addEventListener('click', function () {
+    clearInterval(ticker);
+    running = false;
+    timeLeft = MODES[mode].secs;
+    startBtn.textContent = 'start';
+    render();
+  });
+
+  document.querySelectorAll('.mode-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { switchMode(btn.dataset.mode); });
+  });
+
+  render();
+})();
+</script>
+<script>
+(function () {
+  document.getElementById('themeBtn').addEventListener('click', function () {
+    var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
+})();
+</script>
+</body>
+</html>

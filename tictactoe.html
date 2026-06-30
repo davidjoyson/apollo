@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
 <title>Tic-Tac-Toe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -218,9 +219,41 @@
   }
   .reset-btn:hover { transform: rotate(-1deg) translateY(-2px); }
   .reset-btn:focus-visible { outline: 3px solid var(--o-ink); outline-offset: 3px; }
+
+  [data-theme="dark"] {
+    --paper:  #1c1a17;
+    --rule:   #232d3a;
+    --ink:    #e8e4db;
+    --pencil: #9a9087;
+    --margin: #4a2222;
+    --x-ink:  #e06868;
+    --o-ink:  #5a9fd4;
+    --strike: #5ab88a;
+  }
+
+  .theme-btn {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    font-size: 1.1rem;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    z-index: 100;
+    transition: transform 0.15s ease;
+    padding: 0;
+  }
+  .theme-btn::before { content: '🌙'; }
+  [data-theme="dark"] .theme-btn::before { content: '☀'; }
+  .theme-btn:hover { transform: rotate(20deg) scale(1.08); }
+  .theme-btn:focus-visible { outline: 3px solid var(--o-ink); outline-offset: 2px; }
 </style>
 </head>
 <body>
+<button class="theme-btn" id="themeBtn" aria-label="Toggle theme"></button>
   <div class="sheet">
     <header>
       <h1>tic-tac-toe</h1>
@@ -237,7 +270,7 @@
     <div class="board-wrap">
       <!-- wobbly hand-drawn grid -->
       <svg class="grid-lines" viewBox="0 0 300 300" aria-hidden="true">
-        <g fill="none" stroke="#34322e" stroke-width="4" stroke-linecap="round">
+        <g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round">
           <path d="M102 12 Q98 150 101 290" />
           <path d="M199 10 Q203 150 198 288" />
           <path d="M12 101 Q150 97 290 100" />
@@ -463,6 +496,15 @@
   document.getElementById("resetBtn").addEventListener("click", startRound);
 
   startRound();
+})();
+</script>
+<script>
+(function () {
+  document.getElementById('themeBtn').addEventListener('click', function () {
+    var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
 })();
 </script>
 </body>
