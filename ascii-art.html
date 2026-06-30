@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ASCII Art Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #fbf7ef;
+    --rule:  #c9d8e8;
+    --ink:   #34322e;
+    --pencil:#5b5750;
+    --margin:#e7a9a3;
+    --blue:  #2e6fb7;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+
+  body {
+    font-family: "Kalam", "Comic Sans MS", cursive;
+    color: var(--ink);
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(90deg, transparent 38px, var(--margin) 38px, var(--margin) 39px, transparent 39px),
+      repeating-linear-gradient(180deg, transparent 0 31px, var(--rule) 31px 32px);
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 64px;
+    min-height: 100vh;
+  }
+
+  .sheet {
+    width: 100%;
+    max-width: 840px;
+    padding-left: 12px;
+  }
+
+  header { text-align: center; margin-bottom: 4px; }
+
+  h1 {
+    font-family: "Caveat", cursive;
+    font-weight: 700;
+    font-size: clamp(2.8rem, 12vw, 4rem);
+    line-height: 0.9;
+    margin: 0;
+    display: inline-block;
+    transform: rotate(-1.5deg);
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    color: var(--pencil);
+    margin-top: 4px;
+    transform: rotate(0.5deg);
+    display: block;
+  }
+
+  /* tabs */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0 14px;
+  }
+
+  .tab-btn {
+    font-family: "Kalam", cursive;
+    font-size: 1.05rem;
+    background: transparent;
+    border: 2px solid var(--ink);
+    border-radius: 14px 10px 13px 9px / 9px 13px 10px 14px;
+    padding: 5px 22px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.1s ease;
+  }
+  .tab-btn:hover { transform: translateY(-1px) rotate(-0.5deg); }
+  .tab-btn.active { background: var(--ink); color: var(--paper); }
+  .tab-btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+  /* panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* text row */
+  .text-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  #textInput {
+    font-family: "Kalam", cursive;
+    font-size: 1.25rem;
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--ink);
+    padding: 4px 6px;
+    color: var(--ink);
+    outline: none;
+  }
+  #textInput::placeholder { color: var(--pencil); opacity: 1; }
+
+  select {
+    font-family: "Kalam", cursive;
+    font-size: 0.9rem;
+    background: transparent;
+    border: 2px solid var(--pencil);
+    border-radius: 8px 6px 7px 5px / 5px 7px 6px 8px;
+    padding: 3px 8px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  /* drop zone */
+  #dropZone {
+    border: 3px dashed var(--pencil);
+    border-radius: 16px 12px 15px 11px / 11px 15px 12px 16px;
+    padding: 30px 20px;
+    text-align: center;
+    font-family: "Caveat", cursive;
+    font-size: 1.5rem;
+    color: var(--pencil);
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    margin-bottom: 10px;
+  }
+  #dropZone.over { background: rgba(0,0,0,0.04); border-color: var(--blue); }
+  #dropZone .sub { font-size: 0.95rem; margin-top: 4px; }
+  #dropZone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  #thumb {
+    display: none;
+    max-height: 80px;
+    max-width: 200px;
+    border-radius: 6px;
+    margin: 6px auto 0;
+  }
+
+  /* controls */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 22px;
+    align-items: center;
+    margin: 10px 0;
+    font-size: 0.9rem;
+    color: var(--pencil);
+  }
+
+  .ctrl { display: flex; align-items: center; gap: 6px; }
+
+  #widthRange { accent-color: var(--ink); width: 90px; cursor: pointer; }
+  #invertToggle { accent-color: var(--ink); cursor: pointer; }
+
+  /* output */
+  .output-wrap {
+    background: #fff;
+    border: 2px solid var(--ink);
+    border-radius: 6px 4px 5px 3px / 3px 5px 4px 6px;
+    padding: 12px;
+    margin: 10px 0 14px;
+    overflow: auto;
+    min-height: 90px;
+    max-height: 56vh;
+  }
+
+  #output {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 8.5px;
+    line-height: 1.05;
+    margin: 0;
+    white-space: pre;
+    color: #111;
+    letter-spacing: 0.02em;
+    display: none;
+  }
+
+  .hint {
+    font-family: "Caveat", cursive;
+    font-size: 1.3rem;
+    color: var(--pencil);
+    text-align: center;
+    padding: 16px;
+    margin: 0;
+  }
+
+  /* action buttons */
+  .actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .btn {
+    font-family: "Caveat", cursive;
+    font-size: 1.55rem;
+    border-radius: 16px 12px 15px 11px / 11px 15px 12px 16px;
+    padding: 4px 28px;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+    border: 2px solid transparent;
+  }
+  .btn:hover { transform: translateY(-2px) rotate(-0.5deg); }
+  .btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .btn:disabled { opacity: 0.35; cursor: default; transform: none; pointer-events: none; }
+  .btn-primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .btn-outline  { background: transparent; color: var(--ink); border-color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>ascii art</h1>
+    <span class="subtitle">turn text or images into characters</span>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="text">text</button>
+    <button class="tab-btn" data-tab="image">image</button>
+  </div>
+
+  <div id="panel-text" class="panel active">
+    <div class="text-row">
+      <input id="textInput" type="text" placeholder="type something…" maxlength="50"
+             autocomplete="off" spellcheck="false" aria-label="Text to convert" />
+      <select id="fontSelect" aria-label="Font style">
+        <option value="bold 100px monospace">mono</option>
+        <option value="bold 100px serif">serif</option>
+        <option value="italic bold 100px serif">italic</option>
+        <option value="900 100px sans-serif">sans</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="panel-image" class="panel">
+    <div id="dropZone" role="button" aria-label="Drop image or click to browse">
+      drop an image here
+      <div class="sub">or click to browse</div>
+      <input type="file" id="fileInput" accept="image/*" aria-label="Choose image" />
+    </div>
+    <img id="thumb" alt="Selected image preview" />
+  </div>
+
+  <div class="controls">
+    <div class="ctrl">
+      <label for="widthRange">width</label>
+      <input type="range" id="widthRange" min="20" max="160" value="80" />
+      <span id="widthVal">80</span>
+    </div>
+    <div class="ctrl">
+      <label for="charSet">chars</label>
+      <select id="charSet">
+        <option value="simple">simple</option>
+        <option value="detailed">detailed</option>
+        <option value="blocks">blocks</option>
+        <option value="binary">binary</option>
+      </select>
+    </div>
+    <div class="ctrl">
+      <input type="checkbox" id="invertToggle" />
+      <label for="invertToggle">invert</label>
+    </div>
+  </div>
+
+  <div class="output-wrap">
+    <p class="hint" id="hint">your art appears here</p>
+    <pre id="output" aria-live="polite"></pre>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="copyBtn" disabled>copy</button>
+    <button class="btn btn-outline"  id="dlBtn"   disabled>download .txt</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const CHARS = {
+    simple:   ' .:-=+*#%@',
+    detailed: " .'`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
+    blocks:   ' ░▒▓█',
+    binary:   ' 1'
+  };
+
+  let art = '';
+  let tab = 'text';
+  let loadedImg = null;
+
+  const $ = id => document.getElementById(id);
+
+  const textInput  = $('textInput');
+  const fontSelect = $('fontSelect');
+  const fileInput  = $('fileInput');
+  const dropZone   = $('dropZone');
+  const thumb      = $('thumb');
+  const widthRange = $('widthRange');
+  const widthVal   = $('widthVal');
+  const charSet    = $('charSet');
+  const invertEl   = $('invertToggle');
+  const outputEl   = $('output');
+  const hintEl     = $('hint');
+  const copyBtn    = $('copyBtn');
+  const dlBtn      = $('dlBtn');
+
+  /* ---- tabs ---- */
+  document.querySelectorAll('.tab-btn').forEach(btn =>
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      tab = btn.dataset.tab;
+      $('panel-' + tab).classList.add('active');
+      regen();
+    })
+  );
+
+  /* ---- controls ---- */
+  widthRange.addEventListener('input', () => { widthVal.textContent = widthRange.value; regen(); });
+  charSet.addEventListener('change', regen);
+  invertEl.addEventListener('change', regen);
+  fontSelect.addEventListener('change', regen);
+
+  let debTimer;
+  textInput.addEventListener('input', () => { clearTimeout(debTimer); debTimer = setTimeout(regen, 180); });
+
+  /* ---- file / drop ---- */
+  fileInput.addEventListener('change', e => {
+    if (e.target.files[0]) loadFile(e.target.files[0]);
+  });
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('over');
+    const f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) loadFile(f);
+  });
+
+  function loadFile(file) {
+    const url = URL.createObjectURL(file);
+    loadedImg = new Image();
+    loadedImg.onload = () => {
+      thumb.src = url;
+      thumb.style.display = 'block';
+      regen();
+    };
+    loadedImg.src = url;
+  }
+
+  /* ---- copy / download ---- */
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(art).then(() => {
+      copyBtn.textContent = 'copied!';
+      setTimeout(() => { copyBtn.textContent = 'copy'; }, 1500);
+    });
+  });
+
+  dlBtn.addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([art], { type: 'text/plain' }));
+    a.download = 'ascii-art.txt';
+    a.click();
+  });
+
+  /* ---- rendering ---- */
+  function getChars() { return CHARS[charSet.value]; }
+
+  function luminanceToChar(r, g, b, chs) {
+    const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    const t   = invertEl.checked ? lum : 1 - lum;
+    return chs[Math.min(chs.length - 1, Math.floor(t * chs.length))];
+  }
+
+  function canvasToArt(cvs, w, h, chs) {
+    const data = cvs.getContext('2d').getImageData(0, 0, w, h).data;
+    let s = '';
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        s += luminanceToChar(data[i], data[i + 1], data[i + 2], chs);
+      }
+      s += '\n';
+    }
+    return s;
+  }
+
+  function textToArt(text, cols, font, chs) {
+    if (!text.trim()) return '';
+
+    const off  = document.createElement('canvas');
+    const octx = off.getContext('2d');
+    octx.font  = font;
+    const tw   = Math.ceil(octx.measureText(text).width) + 20;
+    const th   = 160; // generous height for any font
+    off.width  = tw;
+    off.height = th;
+    octx.fillStyle    = '#fff';
+    octx.fillRect(0, 0, tw, th);
+    octx.font         = font;
+    octx.fillStyle    = '#000';
+    octx.textBaseline = 'top';
+    octx.fillText(text, 10, 8);
+
+    /* Scale to output dimensions.
+       0.5 corrects for monospace chars being ~2× taller than wide. */
+    const rows = Math.max(1, Math.round(cols * (th / tw) * 0.5));
+    const cvs  = document.createElement('canvas');
+    cvs.width  = cols;
+    cvs.height = rows;
+    const ctx  = cvs.getContext('2d');
+    ctx.imageSmoothingEnabled  = true;
+    ctx.imageSmoothingQuality  = 'high';
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, cols, rows);
+    ctx.drawImage(off, 0, 0, cols, rows);
+
+    return canvasToArt(cvs, cols, rows, chs);
+  }
+
+  function imageToArt(image, cols, chs) {
+    const rows = Math.max(1, Math.round(cols * (image.height / image.width) * 0.5));
+    const cvs  = document.createElement('canvas');
+    cvs.width  = cols;
+    cvs.height = rows;
+    cvs.getContext('2d').drawImage(image, 0, 0, cols, rows);
+    return canvasToArt(cvs, cols, rows, chs);
+  }
+
+  function regen() {
+    const cols   = parseInt(widthRange.value, 10);
+    const chs    = getChars();
+    let result   = '';
+
+    if (tab === 'text') {
+      result = textToArt(textInput.value, cols, fontSelect.value, chs);
+    } else if (loadedImg) {
+      result = imageToArt(loadedImg, cols, chs);
+    }
+
+    if (result) {
+      art = result;
+      outputEl.textContent  = result;
+      outputEl.style.display = 'block';
+      hintEl.style.display   = 'none';
+      copyBtn.disabled       = false;
+      dlBtn.disabled         = false;
+    } else {
+      art = '';
+      outputEl.style.display = 'none';
+      hintEl.style.display   = 'block';
+      hintEl.textContent     = (tab === 'image' && !loadedImg)
+        ? 'drop an image to get started'
+        : 'type something above';
+      copyBtn.disabled = true;
+      dlBtn.disabled   = true;
+    }
+  }
+
+  regen();
+})();
+</script>
+</body>
+</html>

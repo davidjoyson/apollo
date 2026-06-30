@@ -1,21 +1,21 @@
-# Tic-Tac-Toe
+# Games
 
-A hand-drawn styled tic-tac-toe game built as a single HTML file — no dependencies, no build step.
+A collection of browser games — no dependencies, no build step, each a single HTML file.
 
-## Features
+**[davidjoyson.github.io/games](https://davidjoyson.github.io/games)**
 
-- **2-player mode** — pass and play on the same device
-- **vs Computer** — unbeatable AI using the minimax algorithm
-- Animated hand-drawn X and O marks with a strike-through on win
+## Games
+
+### Tic-Tac-Toe (`tictactoe.html`)
+- 2-player or vs an unbeatable computer (minimax)
+- Animated hand-drawn X and O marks with strike-through on win
 - Persistent score tracking across rounds
-- Fully accessible (ARIA roles, keyboard navigation, reduced-motion support)
 
-## Play
-
-Open `index.html` in any browser, or visit the live page:
-
-**[your-username.github.io/games](https://davidjoyson.github.io/games)**
+### ASCII Art Generator (`ascii-art.html`)
+- Convert text or images to ASCII characters
+- Four character sets: simple, detailed, blocks, binary
+- Adjustable width, invert toggle, copy and download
 
 ## Hosting
 
-Deployed via [GitHub Pages](https://pages.github.com/) — the `main` branch root serves the page directly.
+Deployed via [GitHub Pages](https://pages.github.com/) — the `main` branch root serves `index.html` as a games hub.

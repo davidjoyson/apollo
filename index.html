@@ -3,34 +3,28 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tic-Tac-Toe</title>
+<title>Games</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet" />
 <style>
   :root {
     --paper: #fbf7ef;
-    --rule: #c9d8e8;
-    --ink: #34322e;
-    --pencil: #5b5750;
-    --x-ink: #d9544d;
-    --o-ink: #2e6fb7;
-    --strike: #3a9e6e;
-    --margin: #e7a9a3;
+    --rule:  #c9d8e8;
+    --ink:   #34322e;
+    --pencil:#5b5750;
+    --margin:#e7a9a3;
+    --red:   #d9544d;
+    --blue:  #2e6fb7;
   }
 
   * { box-sizing: border-box; }
-
-  html, body {
-    margin: 0;
-    min-height: 100%;
-  }
+  html, body { margin: 0; min-height: 100%; }
 
   body {
     font-family: "Kalam", "Comic Sans MS", cursive;
     color: var(--ink);
     background-color: var(--paper);
-    /* faint notebook ruling + red margin line */
     background-image:
       linear-gradient(90deg, transparent 38px, var(--margin) 38px, var(--margin) 39px, transparent 39px),
       repeating-linear-gradient(180deg, transparent 0 31px, var(--rule) 31px 32px);
@@ -38,432 +32,125 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 32px 16px 64px;
+    padding: 40px 16px 80px;
     min-height: 100vh;
   }
 
   .sheet {
     width: 100%;
-    max-width: 440px;
+    max-width: 520px;
     padding-left: 12px;
   }
 
   header {
     text-align: center;
-    margin-bottom: 8px;
+    margin-bottom: 36px;
   }
 
   h1 {
     font-family: "Caveat", cursive;
     font-weight: 700;
-    font-size: clamp(2.8rem, 12vw, 4rem);
+    font-size: clamp(3.2rem, 14vw, 5rem);
     line-height: 0.9;
     margin: 0;
-    color: var(--ink);
+    display: inline-block;
     transform: rotate(-1.5deg);
   }
 
   .subtitle {
-    font-size: 0.95rem;
-    color: var(--pencil);
-    margin-top: 4px;
-    transform: rotate(0.6deg);
-  }
-
-  /* mode toggle */
-  .modes {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin: 18px 0 6px;
-  }
-
-  .mode-btn {
-    font-family: "Kalam", cursive;
+    display: block;
     font-size: 1rem;
-    background: transparent;
-    border: 2px solid var(--ink);
-    border-radius: 14px 10px 13px 9px / 9px 13px 10px 14px;
-    padding: 6px 16px;
-    color: var(--ink);
-    cursor: pointer;
-    transition: transform 0.12s ease, background 0.12s ease;
-  }
-  .mode-btn:hover { transform: translateY(-1px) rotate(-0.5deg); }
-  .mode-btn.active { background: var(--ink); color: var(--paper); }
-  .mode-btn:focus-visible { outline: 3px solid var(--o-ink); outline-offset: 2px; }
-
-  /* status / turn line */
-  .status {
-    text-align: center;
-    font-family: "Caveat", cursive;
-    font-size: 1.9rem;
-    min-height: 2.2rem;
-    margin: 14px 0 6px;
     color: var(--pencil);
-  }
-  .status .x-name { color: var(--x-ink); }
-  .status .o-name { color: var(--o-ink); }
-
-  /* board */
-  .board-wrap {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    margin: 0 auto;
+    margin-top: 6px;
+    transform: rotate(0.5deg);
   }
 
-  .grid-lines {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 2;
+  /* game cards */
+  .games {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
   }
 
-  .cells {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    z-index: 1;
-  }
-
-  .cell {
+  .card {
+    display: block;
+    text-decoration: none;
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 18px 14px 17px 13px / 13px 17px 14px 18px;
+    padding: 20px 24px;
     background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 8%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    transition: transform 0.13s ease, background 0.13s ease, box-shadow 0.13s ease;
+    position: relative;
   }
-  .cell:disabled { cursor: default; }
-  .cell:focus-visible {
-    outline: 3px dashed var(--pencil);
-    outline-offset: -8px;
-    border-radius: 12px;
+  .card:hover {
+    transform: translateY(-3px) rotate(-0.4deg);
+    background: rgba(52,50,46,0.04);
+    box-shadow: 3px 4px 0 var(--ink);
   }
-  .cell svg { width: 100%; height: 100%; overflow: visible; }
-
-  /* hand-drawn stroke animation */
-  .stroke {
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: var(--len);
-    stroke-dashoffset: var(--len);
-    animation: draw 0.32s ease forwards;
+  .card:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
   }
-  .stroke.s2 { animation-delay: 0.18s; }
-  @keyframes draw { to { stroke-dashoffset: 0; } }
 
-  .mark-x .stroke { stroke: var(--x-ink); stroke-width: 11; }
-  .mark-o .stroke { stroke: var(--o-ink); stroke-width: 11; }
+  .card-icon {
+    font-size: 2.4rem;
+    line-height: 1;
+    margin-bottom: 6px;
+    display: block;
+  }
 
-  /* winning strike-through */
-  .win-line {
+  .card-title {
+    font-family: "Caveat", cursive;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0 0 4px;
+  }
+
+  .card-desc {
+    font-size: 0.9rem;
+    color: var(--pencil);
+    margin: 0;
+  }
+
+  .card-arrow {
     position: absolute;
-    inset: 0;
-    z-index: 3;
-    pointer-events: none;
-  }
-  .win-line .stroke {
-    stroke: var(--strike);
-    stroke-width: 8;
-    --len: 1000;
-    animation: draw 0.45s ease forwards;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .stroke { animation: none; stroke-dashoffset: 0; }
-  }
-
-  /* scoreboard */
-  .scores {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin: 22px 4px 0;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
     font-family: "Caveat", cursive;
+    font-size: 1.8rem;
+    color: var(--pencil);
+    transition: transform 0.13s ease;
   }
-  .score {
-    text-align: center;
-    flex: 1;
+  .card:hover .card-arrow {
+    transform: translateY(-50%) translateX(3px);
   }
-  .score .label { font-size: 1.4rem; }
-  .score .num { font-size: 2.6rem; line-height: 1; display: block; }
-  .score.x .num, .score.x .label { color: var(--x-ink); }
-  .score.o .num, .score.o .label { color: var(--o-ink); }
-  .score.tie .num, .score.tie .label { color: var(--pencil); }
-
-  .actions {
-    display: flex;
-    justify-content: center;
-    margin-top: 26px;
-  }
-  .reset-btn {
-    font-family: "Caveat", cursive;
-    font-size: 1.7rem;
-    background: var(--ink);
-    color: var(--paper);
-    border: none;
-    border-radius: 16px 12px 15px 11px / 11px 15px 12px 16px;
-    padding: 6px 28px;
-    cursor: pointer;
-    transform: rotate(-1deg);
-    transition: transform 0.12s ease;
-  }
-  .reset-btn:hover { transform: rotate(-1deg) translateY(-2px); }
-  .reset-btn:focus-visible { outline: 3px solid var(--o-ink); outline-offset: 3px; }
 </style>
 </head>
 <body>
-  <div class="sheet">
-    <header>
-      <h1>tic-tac-toe</h1>
-      <div class="subtitle">three in a row wins &mdash; same as always</div>
-    </header>
+<div class="sheet">
+  <header>
+    <h1>games</h1>
+    <span class="subtitle">pick something to play</span>
+  </header>
 
-    <div class="modes" role="group" aria-label="Game mode">
-      <button class="mode-btn active" data-mode="friend">2 players</button>
-      <button class="mode-btn" data-mode="cpu">vs computer</button>
-    </div>
+  <div class="games">
+    <a class="card" href="tictactoe.html">
+      <span class="card-icon">✕ ○</span>
+      <h2 class="card-title">tic-tac-toe</h2>
+      <p class="card-desc">2 players or vs an unbeatable computer</p>
+      <span class="card-arrow">→</span>
+    </a>
 
-    <div class="status" id="status" aria-live="polite"></div>
-
-    <div class="board-wrap">
-      <!-- wobbly hand-drawn grid -->
-      <svg class="grid-lines" viewBox="0 0 300 300" aria-hidden="true">
-        <g fill="none" stroke="#34322e" stroke-width="4" stroke-linecap="round">
-          <path d="M102 12 Q98 150 101 290" />
-          <path d="M199 10 Q203 150 198 288" />
-          <path d="M12 101 Q150 97 290 100" />
-          <path d="M10 199 Q150 203 288 198" />
-        </g>
-      </svg>
-
-      <div class="cells" id="cells" role="grid" aria-label="Tic-tac-toe board"></div>
-
-      <svg class="win-line" id="winLine" viewBox="0 0 300 300" aria-hidden="true"></svg>
-    </div>
-
-    <div class="scores">
-      <div class="score x"><span class="num" id="scoreX">0</span><span class="label" id="labelX">X</span></div>
-      <div class="score tie"><span class="num" id="scoreT">0</span><span class="label">ties</span></div>
-      <div class="score o"><span class="num" id="scoreO">0</span><span class="label" id="labelO">O</span></div>
-    </div>
-
-    <div class="actions">
-      <button class="reset-btn" id="resetBtn">new round</button>
-    </div>
+    <a class="card" href="ascii-art.html">
+      <span class="card-icon">@#%</span>
+      <h2 class="card-title">ascii art</h2>
+      <p class="card-desc">turn text or images into characters</p>
+      <span class="card-arrow">→</span>
+    </a>
   </div>
-
-<script>
-(function () {
-  // SVG path data for hand-drawn marks (slightly imperfect on purpose)
-  const X_SVG = `
-    <svg viewBox="0 0 100 100" class="mark mark-x" aria-hidden="true">
-      <path class="stroke" style="--len:120" d="M22 20 Q52 48 80 82" />
-      <path class="stroke s2" style="--len:120" d="M80 22 Q48 50 20 80" />
-    </svg>`;
-  const O_SVG = `
-    <svg viewBox="0 0 100 100" class="mark mark-o" aria-hidden="true">
-      <path class="stroke" style="--len:260"
-        d="M52 16 Q86 18 86 50 Q86 84 50 84 Q16 84 16 50 Q16 18 50 17" />
-    </svg>`;
-
-  const WINS = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
-  ];
-  // pixel endpoints (viewBox 0..300) for the strike line of each win
-  const WIN_COORDS = [
-    [[18,50],[282,50]], [[18,150],[282,150]], [[18,250],[282,250]],
-    [[50,18],[50,282]], [[150,18],[150,282]], [[250,18],[250,282]],
-    [[22,22],[278,278]], [[278,22],[22,278]]
-  ];
-
-  let board, current, locked, mode = "friend";
-  const score = { X: 0, O: 0, T: 0 };
-
-  const cellsEl = document.getElementById("cells");
-  const statusEl = document.getElementById("status");
-  const winLine = document.getElementById("winLine");
-  const els = {
-    X: document.getElementById("scoreX"),
-    O: document.getElementById("scoreO"),
-    T: document.getElementById("scoreT"),
-    labelO: document.getElementById("labelO"),
-  };
-
-  // build 9 cells once
-  const cellButtons = [];
-  for (let i = 0; i < 9; i++) {
-    const b = document.createElement("button");
-    b.className = "cell";
-    b.setAttribute("role", "gridcell");
-    b.setAttribute("aria-label", "empty square " + (i + 1));
-    b.addEventListener("click", () => play(i));
-    cellsEl.appendChild(b);
-    cellButtons.push(b);
-  }
-
-  function startRound() {
-    board = Array(9).fill("");
-    current = "X";
-    locked = false;
-    winLine.innerHTML = "";
-    cellButtons.forEach((b, i) => {
-      b.innerHTML = "";
-      b.disabled = false;
-      b.setAttribute("aria-label", "empty square " + (i + 1));
-    });
-    renderStatus();
-  }
-
-  function renderStatus() {
-    if (locked) return;
-    if (mode === "cpu" && current === "O") {
-      statusEl.innerHTML = `<span class="o-name">computer</span> is thinking…`;
-    } else {
-      const who = current === "X"
-        ? `<span class="x-name">X</span>`
-        : `<span class="o-name">O</span>`;
-      statusEl.innerHTML = `${who} &mdash; your move`;
-    }
-  }
-
-  function play(i) {
-    if (locked || board[i]) return;
-    placeMark(i, current);
-
-    const result = evaluate();
-    if (result) return finish(result);
-
-    current = current === "X" ? "O" : "X";
-    renderStatus();
-
-    if (mode === "cpu" && current === "O") {
-      locked = true; // block input during CPU turn
-      setTimeout(() => {
-        const move = bestMove();
-        locked = false;
-        play(move);
-      }, 480);
-    }
-  }
-
-  function placeMark(i, mark) {
-    board[i] = mark;
-    cellButtons[i].innerHTML = mark === "X" ? X_SVG : O_SVG;
-    cellButtons[i].disabled = true;
-    cellButtons[i].setAttribute("aria-label", mark + " in square " + (i + 1));
-  }
-
-  function evaluate() {
-    for (let w = 0; w < WINS.length; w++) {
-      const [a, b, c] = WINS[w];
-      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-        return { winner: board[a], line: w };
-      }
-    }
-    if (board.every(Boolean)) return { winner: null };
-    return null;
-  }
-
-  function finish(result) {
-    locked = true;
-    cellButtons.forEach(b => (b.disabled = true));
-
-    if (result.winner) {
-      drawWinLine(result.line);
-      score[result.winner]++;
-      const name = (mode === "cpu" && result.winner === "O")
-        ? `<span class="o-name">computer</span> wins`
-        : `<span class="${result.winner === "X" ? "x" : "o"}-name">${result.winner}</span> wins!`;
-      statusEl.innerHTML = name;
-    } else {
-      score.T++;
-      statusEl.textContent = "a tie — nobody blinks";
-    }
-    updateScores();
-  }
-
-  function drawWinLine(w) {
-    const [[x1, y1], [x2, y2]] = WIN_COORDS[w];
-    winLine.innerHTML =
-      `<line class="stroke" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" />`;
-  }
-
-  function updateScores() {
-    els.X.textContent = score.X;
-    els.O.textContent = score.O;
-    els.T.textContent = score.T;
-  }
-
-  /* ---- unbeatable computer (minimax), O is the AI ---- */
-  function bestMove() {
-    let bestScore = -Infinity, move = -1;
-    for (let i = 0; i < 9; i++) {
-      if (!board[i]) {
-        board[i] = "O";
-        const s = minimax(board, 0, false);
-        board[i] = "";
-        if (s > bestScore) { bestScore = s; move = i; }
-      }
-    }
-    return move;
-  }
-
-  function minimax(b, depth, isMax) {
-    const r = winnerOf(b);
-    if (r === "O") return 10 - depth;
-    if (r === "X") return depth - 10;
-    if (b.every(Boolean)) return 0;
-
-    if (isMax) {
-      let best = -Infinity;
-      for (let i = 0; i < 9; i++) {
-        if (!b[i]) { b[i] = "O"; best = Math.max(best, minimax(b, depth + 1, false)); b[i] = ""; }
-      }
-      return best;
-    } else {
-      let best = Infinity;
-      for (let i = 0; i < 9; i++) {
-        if (!b[i]) { b[i] = "X"; best = Math.min(best, minimax(b, depth + 1, true)); b[i] = ""; }
-      }
-      return best;
-    }
-  }
-
-  function winnerOf(b) {
-    for (const [a, c, d] of WINS) {
-      if (b[a] && b[a] === b[c] && b[a] === b[d]) return b[a];
-    }
-    return null;
-  }
-
-  /* ---- controls ---- */
-  document.querySelectorAll(".mode-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      mode = btn.dataset.mode;
-      els.labelO.textContent = mode === "cpu" ? "CPU" : "O";
-      score.X = score.O = score.T = 0;
-      updateScores();
-      startRound();
-    });
-  });
-
-  document.getElementById("resetBtn").addEventListener("click", startRound);
-
-  startRound();
-})();
-</script>
+</div>
 </body>
 </html>
