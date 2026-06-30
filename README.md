@@ -27,6 +27,11 @@ A collection of browser tools and games — no dependencies, no build step, each
 - Persisted to `localStorage` across page reloads
 - Clear completed tasks in one click
 
+### Magic 8-Ball (`magic8.html`)
+- Type a question, click the ball for a response
+- 20 classic answers colour-coded by sentiment (positive/neutral/negative)
+- Shake animation with glassy 3D ball CSS
+
 ## Hosting
 
 Deployed via [GitHub Pages](https://pages.github.com/) — the `main` branch root serves `index.html` as the hub.

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+<title>Magic 8-Ball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper:  #fbf7ef;
+    --rule:   #c9d8e8;
+    --ink:    #34322e;
+    --pencil: #5b5750;
+    --margin: #e7a9a3;
+    --red:    #d9544d;
+    --blue:   #2e6fb7;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+
+  body {
+    font-family: "Kalam", "Comic Sans MS", cursive;
+    color: var(--ink);
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(90deg, transparent 38px, var(--margin) 38px, var(--margin) 39px, transparent 39px),
+      repeating-linear-gradient(180deg, transparent 0 31px, var(--rule) 31px 32px);
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 16px 80px;
+    min-height: 100vh;
+  }
+
+  .sheet {
+    width: 100%;
+    max-width: 420px;
+    padding-left: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+    width: 100%;
+  }
+
+  h1 {
+    font-family: "Caveat", cursive;
+    font-weight: 700;
+    font-size: clamp(2.4rem, 11vw, 3.6rem);
+    line-height: 0.9;
+    margin: 0;
+    display: inline-block;
+    transform: rotate(-1.5deg);
+  }
+
+  .subtitle {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--pencil);
+    margin-top: 6px;
+    transform: rotate(0.5deg);
+  }
+
+  /* question input */
+  .question-row {
+    width: 100%;
+    margin-bottom: 32px;
+  }
+
+  .question-input {
+    width: 100%;
+    font-family: "Kalam", cursive;
+    font-size: 1.05rem;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--ink);
+    padding: 6px 4px;
+    outline: none;
+    text-align: center;
+    transition: border-color 0.15s ease;
+  }
+  .question-input::placeholder { color: var(--pencil); }
+  .question-input:focus { border-color: var(--blue); }
+
+  /* ball */
+  .ball-wrap {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    margin-bottom: 32px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .ball {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 36% 34%, #4a4a4a 0%, #111 55%, #000 100%);
+    box-shadow:
+      4px 6px 18px rgba(0,0,0,0.55),
+      inset -6px -8px 20px rgba(0,0,0,0.6),
+      inset 4px 5px 12px rgba(255,255,255,0.07);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.12s ease;
+  }
+  .ball-wrap:hover .ball { transform: scale(1.03); }
+  .ball-wrap:active  .ball { transform: scale(0.97); }
+
+  /* highlight glint */
+  .ball::before {
+    content: '';
+    position: absolute;
+    width: 56px;
+    height: 36px;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.18) 0%, transparent 70%);
+    border-radius: 50%;
+    top: 34px;
+    left: 46px;
+    transform: rotate(-20deg);
+    pointer-events: none;
+  }
+
+  /* inner window */
+  .ball-inner {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #1a2a4a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
+  }
+
+  .eight {
+    font-family: "Caveat", cursive;
+    font-size: 3.2rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    transition: opacity 0.25s ease;
+  }
+
+  .answer-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    font-family: "Kalam", cursive;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #cce0ff;
+    text-align: center;
+    line-height: 1.25;
+    opacity: 0;
+    transition: opacity 0.35s ease 0.15s;
+  }
+
+  .ball-wrap.revealed .eight        { opacity: 0; }
+  .ball-wrap.revealed .answer-text  { opacity: 1; }
+
+  /* shake */
+  @keyframes shake {
+    0%   { transform: rotate(0deg)    translate(0, 0); }
+    10%  { transform: rotate(-6deg)   translate(-4px, -2px); }
+    20%  { transform: rotate(5deg)    translate(4px, 2px); }
+    30%  { transform: rotate(-5deg)   translate(-3px, 3px); }
+    40%  { transform: rotate(4deg)    translate(3px, -3px); }
+    50%  { transform: rotate(-3deg)   translate(-2px, 2px); }
+    60%  { transform: rotate(3deg)    translate(2px, -1px); }
+    70%  { transform: rotate(-2deg)   translate(-1px, 1px); }
+    80%  { transform: rotate(1deg)    translate(1px, 0px); }
+    90%  { transform: rotate(-1deg)   translate(0px, 1px); }
+    100% { transform: rotate(0deg)    translate(0, 0); }
+  }
+
+  .ball-wrap.shaking .ball {
+    animation: shake 0.55s ease;
+  }
+
+  /* answer type colours */
+  .ball-wrap.positive .ball-inner { background: #1a2a4a; }
+  .ball-wrap.neutral  .ball-inner { background: #2a2a1a; }
+  .ball-wrap.negative .ball-inner { background: #2a1a1a; }
+
+  .ball-wrap.positive .answer-text { color: #cce0ff; }
+  .ball-wrap.neutral  .answer-text { color: #e8e0b0; }
+  .ball-wrap.negative .answer-text { color: #ffbcbc; }
+
+  /* hint */
+  .hint {
+    font-size: 0.88rem;
+    color: var(--pencil);
+    text-align: center;
+    transform: rotate(-0.4deg);
+    transition: opacity 0.3s ease;
+  }
+
+  .back {
+    display: block;
+    text-align: center;
+    margin-top: 40px;
+    font-family: "Caveat", cursive;
+    font-size: 1.3rem;
+    color: var(--pencil);
+    text-decoration: none;
+    transition: transform 0.12s ease;
+  }
+  .back:hover { transform: translateX(-3px); }
+
+  [data-theme="dark"] {
+    --paper:  #1c1a17;
+    --rule:   #232d3a;
+    --ink:    #e8e4db;
+    --pencil: #9a9087;
+    --margin: #4a2222;
+    --red:    #e06868;
+    --blue:   #5a9fd4;
+  }
+
+  .theme-btn {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    font-size: 1.1rem;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    z-index: 100;
+    transition: transform 0.15s ease;
+    padding: 0;
+  }
+  .theme-btn::before { content: '🌙'; }
+  [data-theme="dark"] .theme-btn::before { content: '☀'; }
+  .theme-btn:hover { transform: rotate(20deg) scale(1.08); }
+  .theme-btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<button class="theme-btn" id="themeBtn" aria-label="Toggle theme"></button>
+<div class="sheet">
+  <header>
+    <h1>magic 8-ball</h1>
+    <span class="subtitle">ask, then shake</span>
+  </header>
+
+  <div class="question-row">
+    <input class="question-input" id="questionInput" type="text"
+           placeholder="will today be a good day?" maxlength="120" autocomplete="off" />
+  </div>
+
+  <div class="ball-wrap" id="ballWrap" role="button" tabindex="0"
+       aria-label="Shake the magic 8-ball">
+    <div class="ball">
+      <div class="ball-inner">
+        <span class="eight">8</span>
+        <span class="answer-text" id="answerText" aria-live="polite"></span>
+      </div>
+    </div>
+  </div>
+
+  <p class="hint" id="hint">click the ball to reveal your fate</p>
+
+  <a class="back" href="index.html">← back</a>
+</div>
+
+<script>
+(function () {
+  var ANSWERS = [
+    { text: 'it is certain',          type: 'positive' },
+    { text: 'it is decidedly so',     type: 'positive' },
+    { text: 'without a doubt',        type: 'positive' },
+    { text: 'yes, definitely',        type: 'positive' },
+    { text: 'you may rely on it',     type: 'positive' },
+    { text: 'as I see it, yes',       type: 'positive' },
+    { text: 'most likely',            type: 'positive' },
+    { text: 'outlook good',           type: 'positive' },
+    { text: 'yes',                    type: 'positive' },
+    { text: 'signs point to yes',     type: 'positive' },
+    { text: 'reply hazy,\ntry again', type: 'neutral'  },
+    { text: 'ask again later',        type: 'neutral'  },
+    { text: 'better not\ntell you now', type: 'neutral' },
+    { text: 'cannot\npredict now',    type: 'neutral'  },
+    { text: 'concentrate\nand ask again', type: 'neutral' },
+    { text: "don't\ncount on it",     type: 'negative' },
+    { text: 'my reply is no',         type: 'negative' },
+    { text: 'my sources say no',      type: 'negative' },
+    { text: 'outlook\nnot so good',   type: 'negative' },
+    { text: 'very doubtful',          type: 'negative' },
+  ];
+
+  var ballWrap  = document.getElementById('ballWrap');
+  var answerText = document.getElementById('answerText');
+  var hint      = document.getElementById('hint');
+  var shaking   = false;
+
+  function shake() {
+    if (shaking) return;
+    shaking = true;
+
+    ballWrap.classList.remove('revealed', 'positive', 'neutral', 'negative');
+    ballWrap.classList.add('shaking');
+    hint.textContent = '…';
+
+    setTimeout(function () {
+      var pick = ANSWERS[Math.floor(Math.random() * ANSWERS.length)];
+      answerText.textContent = pick.text;
+      ballWrap.classList.remove('shaking');
+      ballWrap.classList.add('revealed', pick.type);
+      hint.textContent = 'click again to ask once more';
+      shaking = false;
+    }, 580);
+  }
+
+  ballWrap.addEventListener('click', shake);
+  ballWrap.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); shake(); }
+  });
+
+  document.getElementById('themeBtn').addEventListener('click', function () {
+    var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
+})();
+</script>
+</body>
+</html>
