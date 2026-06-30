@@ -2,7 +2,7 @@
 
 A collection of browser games — no dependencies, no build step, each a single HTML file.
 
-**[davidjoyson.github.io/games](https://davidjoyson.github.io/games)**
+**[davidjoyson.github.io/apollo](https://davidjoyson.github.io/apollo)**
 
 ## Games
 
