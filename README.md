@@ -1,10 +1,10 @@
-# Games
+# Apollo Hub
 
-A collection of browser games — no dependencies, no build step, each a single HTML file.
+A collection of browser tools and games — no dependencies, no build step, each a single HTML file. Notebook/paper aesthetic with dark and light theme support.
 
 **[davidjoyson.github.io/apollo](https://davidjoyson.github.io/apollo)**
 
-## Games
+## Pages
 
 ### Tic-Tac-Toe (`tictactoe.html`)
 - 2-player or vs an unbeatable computer (minimax)
@@ -16,6 +16,12 @@ A collection of browser games — no dependencies, no build step, each a single 
 - Four character sets: simple, detailed, blocks, binary
 - Adjustable width, invert toggle, copy and download
 
+### Pomodoro Timer (`pomodoro.html`)
+- Focus (25 min), short break (5 min), and long break (15 min) modes
+- Animated SVG progress ring with mode-coloured stroke
+- Session tracking with tomato icons; Web Audio ding on completion
+- Live tab title countdown
+
 ## Hosting
 
-Deployed via [GitHub Pages](https://pages.github.com/) — the `main` branch root serves `index.html` as a games hub.
+Deployed via [GitHub Pages](https://pages.github.com/) — the `main` branch root serves `index.html` as the hub.
